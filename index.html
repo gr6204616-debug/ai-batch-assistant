@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <link rel="icon" href="data:,">
- 
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مساعد دراسي | الذكاء الاصطناعي</title>
@@ -283,11 +283,10 @@ function deleteLecture(lectureId) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    subject_id: currentSubjectId, 
-                    title: title, 
-                    url: url, 
-                    type: type 
-                })
+    subject_id: currentSubjectId, 
+    title: title, 
+    file_url: url // قمنا بتغيير الاسم هنا ليتطابق مع ما يطلبه الخادم العالق
+})
             })
             .then(res => res.json())
             .then(data => {
