@@ -223,32 +223,53 @@
         }
 
         // دالة جلب المحاضرات من الخادم
-        function fetchSubjectData() {
-            const container = document.getElementById('lectures-container');
-            container.innerHTML = '<div class="empty-state">⏳ جاري الاتصال بالخادم...</div>';
+        // دالة جلب المحاضرات (محدثة لتشمل زر الحذف للأدمن)
+function fetchSubjectData() {
+    const container = document.getElementById('lectures-container');
+    container.innerHTML = '<div class="empty-state">⏳ جاري الاتصال بالخادم...</div>';
 
-            fetch(`https://batch-api-oj4n.vercel.app/api/lectures/${currentSubjectId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<div class="empty-state">لا توجد محاضرات أو شروحات لهذه المادة حتى الآن.</div>';
-                    return;
-                }
-                
-                container.innerHTML = data.map(item => `
-                    <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                        <div style="font-weight: 500;">${item.title}</div>
-                        <a href="${item.url}" target="_blank" class="btn" style="width: auto; padding: 5px 15px; background: ${item.type === 'video' ? 'var(--danger)' : 'var(--primary)'}">
-                            ${item.type === 'video' ? '▶️ مشاهدة' : '📄 تحميل'}
-                        </a>
-                    </div>
-                `).join('');
-            })
-            .catch(error => {
-                console.error(error);
-                container.innerHTML = '<div class="empty-state" style="color: #ef4444;">❌ فشل الاتصال بالخادم. تأكد من الروابط.</div>';
-            });
+    fetch(`https://batch-api-oj4n.vercel.app/api/lectures/${currentSubjectId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="empty-state">لا توجد محاضرات أو شروحات لهذه المادة حتى الآن.</div>';
+            return;
         }
+        
+        container.innerHTML = data.map(item => `
+            <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                <div style="font-weight: 500; flex: 1;">${item.title}</div>
+                
+                <!-- زر المشاهدة/التحميل -->
+                <a href="${item.url}" target="_blank" class="btn" style="width: auto; padding: 5px 15px; background: ${item.type === 'video' ? 'var(--danger)' : 'var(--primary)'}">
+                    ${item.type === 'video' ? '▶️' : '📄'}
+                </a>
+
+                <!-- زر الحذف (يظهر للأدمن فقط) -->
+                ${(currentUser && currentUser.role === 'admin') ? `<button class="btn btn-danger" onclick="deleteLecture(${item.id})" style="width: auto; padding: 5px 10px;">🗑️</button>` : ''}
+            </div>
+        `).join('');
+    })
+    .catch(error => {
+        console.error(error);
+        container.innerHTML = '<div class="empty-state" style="color: #ef4444;">❌ فشل الاتصال بالخادم.</div>';
+    });
+}
+
+// دالة الحذف الجديدة
+function deleteLecture(lectureId) {
+    if (!confirm("هل أنت متأكد من حذف هذه المحاضرة نهائياً؟")) return;
+
+    fetch(`https://batch-api-oj4n.vercel.app/api/lectures/${lectureId}`, {
+        method: 'DELETE'
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert("✅ تم الحذف بنجاح!");
+        fetchSubjectData(); // تحديث الشاشة بعد الحذف
+    })
+    .catch(e => alert("حدث خطأ أثناء الحذف"));
+}
 
         // دالة إضافة محتوى جديد
         function addContent(type) {
